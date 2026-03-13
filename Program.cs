@@ -1,8 +1,13 @@
+using WorldExplorerApi.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<ICountryService, CountryService>();
+builder.Services.AddScoped<IWeatherService, WeatherService>();
 
 var app = builder.Build();
 
@@ -18,6 +23,18 @@ var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
+
+app.MapGet("/api/country/{name}", async (string name, ICountryService countryService, IWeatherService weatherService) =>
+{
+    var country = await countryService.GetCountryAsync(name);
+    if (country is null)
+        return Results.NotFound();
+
+    var weather = await weatherService.GetWeatherAsync(country.Latitude, country.Longitude);
+
+    return Results.Ok(new { Country = country, Weather = weather });
+})
+.WithName("GetCountry");
 
 app.MapGet("/weatherforecast", () =>
 {
