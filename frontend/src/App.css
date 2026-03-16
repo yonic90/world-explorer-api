@@ -1,3 +1,25 @@
+/* ============================================================
+   App.css — Component styles for the World Explorer app
+
+   Organised in the same order the elements appear on the page:
+   1. Global reset
+   2. Page layout (.app)
+   3. Header
+   4. Search form
+   5. Status & error messages
+   6. Results grid
+   7. Cards (shared)
+   8. Country card specifics
+   9. Info grid (shared between both cards)
+   10. Weather card specifics
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   1. Global reset
+   box-sizing: border-box makes width/padding calculations intuitive —
+   padding is included in the element's total width, not added on top.
+   Removing default margin/padding gives us a clean slate.
+   ---------------------------------------------------------- */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -5,18 +27,26 @@
 }
 
 body {
-  font-family: system-ui, sans-serif;
-  background: #f0f4f8;
-  color: #1a202c;
-  min-height: 100vh;
+  font-family: system-ui, sans-serif; /* Uses the OS's default UI font */
+  background: #f0f4f8;                /* Light blue-grey page background */
+  color: #1a202c;                     /* Near-black default text */
+  min-height: 100vh;                  /* Ensures the background fills the full viewport */
 }
 
+/* ----------------------------------------------------------
+   2. Page layout
+   Centers the content and constrains its maximum width so it
+   doesn't stretch uncomfortably wide on large screens.
+   ---------------------------------------------------------- */
 .app {
   max-width: 720px;
-  margin: 0 auto;
-  padding: 48px 20px;
+  margin: 0 auto;     /* Centers the block horizontally */
+  padding: 48px 20px; /* Vertical breathing room + horizontal side padding on mobile */
 }
 
+/* ----------------------------------------------------------
+   3. Header
+   ---------------------------------------------------------- */
 header {
   text-align: center;
   margin-bottom: 36px;
@@ -25,17 +55,20 @@ header {
 header h1 {
   font-size: 2rem;
   font-weight: 700;
-  color: #2b6cb0;
+  color: #2b6cb0; /* Brand blue */
 }
 
 header p {
   margin-top: 6px;
-  color: #718096;
+  color: #718096;      /* Muted grey for secondary text */
   font-size: 0.95rem;
 }
 
-/* Search */
-
+/* ----------------------------------------------------------
+   4. Search form
+   Uses flexbox so the input stretches to fill available space
+   while the button stays its natural width.
+   ---------------------------------------------------------- */
 .search-form {
   display: flex;
   gap: 8px;
@@ -43,18 +76,18 @@ header p {
 }
 
 .search-form input {
-  flex: 1;
+  flex: 1;              /* Grow to fill remaining space */
   padding: 10px 16px;
   font-size: 1rem;
   border: 2px solid #cbd5e0;
   border-radius: 8px;
-  outline: none;
-  transition: border-color 0.2s;
+  outline: none;        /* Remove browser default outline; we add our own on focus */
+  transition: border-color 0.2s; /* Smooth colour change on focus */
   background: #fff;
 }
 
 .search-form input:focus {
-  border-color: #2b6cb0;
+  border-color: #2b6cb0; /* Highlight the input border when the user is typing */
 }
 
 .search-form button {
@@ -69,8 +102,9 @@ header p {
   transition: background 0.2s;
 }
 
+/* :not(:disabled) prevents the hover style from applying when the button is disabled */
 .search-form button:hover:not(:disabled) {
-  background: #2c5282;
+  background: #2c5282; /* Slightly darker blue on hover */
 }
 
 .search-form button:disabled {
@@ -78,8 +112,9 @@ header p {
   cursor: not-allowed;
 }
 
-/* Status & error */
-
+/* ----------------------------------------------------------
+   5. Status & error messages
+   ---------------------------------------------------------- */
 .status {
   text-align: center;
   color: #718096;
@@ -88,39 +123,48 @@ header p {
 }
 
 .error {
-  background: #fff5f5;
+  background: #fff5f5;      /* Pale red background */
   border: 1px solid #feb2b2;
-  color: #c53030;
+  color: #c53030;           /* Dark red text */
   border-radius: 8px;
   padding: 14px 20px;
   text-align: center;
 }
 
-/* Results layout */
-
+/* ----------------------------------------------------------
+   6. Results grid
+   Two equal columns side-by-side on wide screens.
+   Collapses to a single column on narrow screens (mobile).
+   ---------------------------------------------------------- */
 .results {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr; /* Two equal-width columns */
   gap: 20px;
 }
 
+/* Media query: apply different styles below 560px viewport width */
 @media (max-width: 560px) {
   .results {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Stack cards vertically on small screens */
   }
 }
 
-/* Cards */
-
+/* ----------------------------------------------------------
+   7. Cards (shared base styles)
+   Both CountryCard and WeatherCard use this class.
+   ---------------------------------------------------------- */
 .card {
   background: #fff;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07); /* Subtle lift effect */
 }
 
-/* Country card */
+/* ----------------------------------------------------------
+   8. Country card
+   ---------------------------------------------------------- */
 
+/* Flag image + country name sit side-by-side in the card header */
 .card-header {
   display: flex;
   align-items: center;
@@ -132,7 +176,7 @@ header p {
   width: 64px;
   height: auto;
   border-radius: 4px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e2e8f0; /* Subtle border for flags with white edges */
   object-fit: cover;
 }
 
@@ -142,19 +186,23 @@ header p {
   color: #2d3748;
 }
 
-/* Info grid (shared by both cards) */
-
+/* ----------------------------------------------------------
+   9. Info grid (shared by country card and weather card)
+   Uses CSS Grid with two columns: label | value.
+   "auto" lets the label column shrink to fit its content;
+   "1fr" gives all remaining space to the value column.
+   ---------------------------------------------------------- */
 .info-grid {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 8px 16px;
+  gap: 8px 16px; /* row-gap column-gap */
   font-size: 0.9rem;
 }
 
 .info-grid dt {
-  color: #718096;
+  color: #718096;       /* Muted label */
   font-weight: 500;
-  white-space: nowrap;
+  white-space: nowrap;  /* Prevents the label from wrapping mid-word */
 }
 
 .info-grid dd {
@@ -162,8 +210,11 @@ header p {
   font-weight: 500;
 }
 
-/* Weather card */
+/* ----------------------------------------------------------
+   10. Weather card
+   ---------------------------------------------------------- */
 
+/* Subdued section heading style for "Current Weather" */
 .weather-card h2 {
   font-size: 1rem;
   font-weight: 600;
@@ -173,6 +224,7 @@ header p {
   margin-bottom: 16px;
 }
 
+/* Row containing the weather icon + temperature + description */
 .weather-main {
   display: flex;
   align-items: center;
@@ -180,6 +232,8 @@ header p {
   margin-bottom: 16px;
 }
 
+/* OpenWeatherMap provides 50×50 icons; @2x gives us 100×100.
+   We display at 64px for a comfortable size without pixelation. */
 .weather-icon {
   width: 64px;
   height: 64px;
@@ -189,16 +243,17 @@ header p {
   font-size: 2rem;
   font-weight: 700;
   color: #2d3748;
-  line-height: 1;
+  line-height: 1; /* Tighten line height for the large number */
 }
 
 .description {
   margin-top: 4px;
   color: #718096;
   font-size: 0.9rem;
-  text-transform: capitalize;
+  text-transform: capitalize; /* "clear sky" → "Clear sky" */
 }
 
+/* Shown when weather is null (API key missing) */
 .no-weather {
   display: flex;
   align-items: center;
