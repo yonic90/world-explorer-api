@@ -8,6 +8,13 @@ builder.Services.AddOpenApi();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<ICountryService, CountryService>();
 builder.Services.AddScoped<IWeatherService, WeatherService>();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
 
 var app = builder.Build();
 
@@ -18,6 +25,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors();
 
 var summaries = new[]
 {

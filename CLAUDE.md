@@ -11,36 +11,35 @@ dotnet run --launch-profile https     # Run on HTTPS (port 7037)
 dotnet test                           # Run tests (when test project exists)
 ```
 
-The `.http` file at `world-explorer-api.http` can be used to manually test endpoints.
+`world-explorer-api.http` can be used to manually test endpoints.
 
 ## Architecture
 
-ASP.NET Core 10.0 Web API using the **minimal APIs** pattern (no controllers — endpoints are registered directly in `Program.cs` via `app.Map*` methods).
+ASP.NET Core 10.0 Web API using the **minimal APIs** pattern — endpoints are registered directly in `Program.cs` via `app.Map*`, no controllers.
 
-**Key structural intent:**
-- `Models/` — Data transfer objects (`CountryInfo`, `WeatherInfo`). These are defined but not yet wired to endpoints.
-- `Services/` — Empty; intended for business logic / external API integrations.
-- `Controllers/` — Empty; not used (minimal API style).
+- `Models/` — `CountryInfo` (name, capital, flag, population, region, currency, language, lat/lng) and `WeatherInfo` (description, temperature, feelsLike, humidity, icon)
+- `Services/` — `ICountryService`/`CountryService` calls RestCountries API; `IWeatherService`/`WeatherService` calls OpenWeatherMap API (requires key in config)
 
-**Middleware pipeline (Program.cs):**
-1. OpenAPI (dev only)
-2. HTTPS redirection
-3. Endpoint routing
+**Request flow for `GET /api/country/{name}`:**
+1. `CountryService.GetCountryAsync` fetches from RestCountries, parses JSON manually via `JsonDocument`, returns `CountryInfo` with lat/lng
+2. `WeatherService.GetWeatherAsync` uses the lat/lng to fetch from OpenWeatherMap, returns `WeatherInfo`
+3. Endpoint returns `{ Country, Weather }` — `Weather` is `null` if API key is missing or call fails
 
-The project is early-stage. The only active endpoint is a placeholder `GET /weatherforecast`. `CountryInfo` and `WeatherInfo` models suggest the app is intended to serve real country and weather data, likely by integrating external APIs inside `Services/`.
+## Configuration
+
+OpenWeatherMap API key goes in `appsettings.json`:
+```json
+"OpenWeatherMap": { "ApiKey": "your-key-here" }
+```
+`WeatherService` returns `null` silently when the key is absent.
 
 ## External APIs
 
-- **RestCountries**: `https://restcountries.com/v3.1/name/{countryName}` — no API key required
-- **OpenWeatherMap**: `https://api.openweathermap.org/data/2.5/weather` — requires API key (store in appsettings.json)
-
-## Intended Endpoints
-
-- `GET /api/country/{name}` — returns CountryInfo + WeatherInfo combined
+- **RestCountries**: `https://restcountries.com/v3.1/name/{countryName}` — no key required
+- **OpenWeatherMap**: `https://api.openweathermap.org/data/2.5/weather` — key required
 
 ## Conventions
 
-- Services registered via Dependency Injection in Program.cs
-- Use IHttpClientFactory for HTTP calls
-- Interfaces for all services (ICountryService, IWeatherService)
-- Async/await throughout
+- Services registered as `Scoped` via DI in `Program.cs`
+- `IHttpClientFactory` used for all HTTP calls (injected into services)
+- All service methods are async; JSON parsed with `System.Text.Json.JsonDocument`
